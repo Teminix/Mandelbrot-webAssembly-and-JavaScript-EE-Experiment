@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Mandelbrot set plotter</title>
+    <style media="screen">
+      html,body {
+        height:100%;
+        width:100%;
+      }
+      button[disabled] {
+        cursor:not-allowed;
+      }
+      canvas#canvas {
+        border: 2px black solid;
+        cursor:crosshair
+      }
+      progress[value]{
+        appearance:none;
+        -webkit-appearance:none;
+        height:20px;
+        border:1px solid black;
+      }
+      progress[value]::-webkit-progress-bar {
+        background-color:white;
+      }
+      progress[value]::-webkit-progress-value {
+        background-color:black;
+      }
+      .container {
+        display:flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        flex-direction:column;
+      }
+      #canvas {
+        height:80%;
+        width:80%;
+      }
+    </style>
+    <script src="complex.min.js" charset="utf-8"></script>
+    <script src="jquery.js" charset="utf-8"></script>
+  </head>
+  <body>
+    <div class="">
+      <canvas id="canvas" width="1920" height="1080"></canvas>
+      <span style="display:inline-block;vertical-align:top">
+        <table>
+          <tr>
+            <td>X pixel: <span id="xpixel" class="loadable"></span></td>
+          </tr>
+          <tr>
+            <td>Y pixel: <span id="ypixel" class="loadable"></span></td>
+          </tr>
+          <tr>
+            <td>X Coordinate: <span id="xcoordinate" class="loadable"></span></td>
+          </tr>
+          <tr>
+            <td>Y Coordinate: <span id="ycoordinate" class="loadable"></span></td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td>xStartOffset: <span id="xstart"></span></td>
+          </tr>
+          <tr>
+            <td>yStartOffset: <span id="ystart"></span></td>
+          </tr>
+          <tr>
+            <td>xEndOffset: <span id="xend"></span></td>
+          </tr>
+          <tr>
+            <td>yEndOffset: <span id="yend"></span></td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td>Runtime: <span id="runtime" class="loadable" onloadText="null"></span></td>
+          </tr>
+          <tr>
+            <td>
+              <button type="button" name="button" disabled>Soy Dio</button>
+            </td>
+          </tr>
+        </table>
+      </span>
+    </div>
+      <script src="script.js" charset="utf-8"></script>
+  </body>
+</html>
