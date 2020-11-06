@@ -1,0 +1,24 @@
+{
+  "name": "mbrot-set",
+  "version": "1.0.0",
+  "description": "",
+  "main": "complex.min.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Teminix/Mandelbrot-webassembly-HTMLCanvas-code.git"
+  },
+  "dependencies": {
+    "express": "*",
+    "morgan": "^1.10.0"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Teminix/Mandelbrot-webassembly-HTMLCanvas-code/issues"
+  },
+  "homepage": "https://github.com/Teminix/Mandelbrot-webassembly-HTMLCanvas-code#readme"
+}

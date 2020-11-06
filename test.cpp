@@ -21,6 +21,7 @@ void modifyArray(int array[],int len){
 }
 int main(){
   int array1[] = {12,58,6,321};
+  //
   for(int i=0;i<4;i++) cout << array1[i] << " ";
   cout << endl;
   modifyArray(array1,4);
