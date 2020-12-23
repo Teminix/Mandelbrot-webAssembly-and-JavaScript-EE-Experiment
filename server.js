@@ -8,7 +8,9 @@ app.get('/',(req,res) => {
 app.get("/out",(req,res) => {
   res.type("application/octet-stream").send()
 })
+app.use(express.static("./static/"))
 app.use(express.static("./static"))
 app.listen(8000,'0.0.0.0',() => {
   console.log("Server running on 8000")
 })
+//
