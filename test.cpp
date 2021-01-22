@@ -5,12 +5,12 @@ double avgNums(int arr[], int len){
   for(int i=0;i<len;i++) sum+=arr[i];
   return (sum/len);
 }
-bool mandelbrotCheck(double re, double im, int iterations){
+bool mandelbrotCheck(double re, double im, int iterations, int threshold = 2){
   for(int i=0;i<iterations;i++){
     double tempRe = re;
     re = re*re - im*im;
     im = 2*tempRe*im;
-    if(re*re + im*im > 4) return false;
+    if(re*re + im*im > threshold*threshold) return false;
   }
   return true;
 }

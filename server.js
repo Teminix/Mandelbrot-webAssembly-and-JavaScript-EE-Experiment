@@ -3,7 +3,7 @@ const app = express();
 const morgan = require("morgan");
 app.use(morgan('short'))//
 app.get('/',(req,res) => {
-  res.send("Hello there");
+  res.type("html").send("Hello there <a href='/index.html'>Link to main site</a>");
 })
 app.get("/out",(req,res) => {
   res.type("application/octet-stream").send()
