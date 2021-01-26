@@ -51,6 +51,7 @@
     <script src="complex.min.js" charset="utf-8"></script>
     <script src="jquery.js" charset="utf-8"></script>
     <script src="axios.js" charset="utf-8"></script>
+    <script src="output.js" charset="utf-8"></script>
   </head>
   <body>
     <div class="">
@@ -61,9 +62,9 @@
           <tr>
             <td>
               Rendering Engine
-              <select class="" name="Engine">
-                <option class="" value="option">WebAssembly</option>
-                <option value="" selected>JavaScript</option>
+              <select class="" id="renderEngine">
+                <option class="" value="WebAssembly">WebAssembly</option>
+                <option value="JavaScript" selected>JavaScript</option>
               </select>
             </td>
           </tr>
@@ -102,6 +103,9 @@
           </tr>
           <tr>
             <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td>WASM Runtime status: <span id="runtimeStatus">Initialising...</span></td>
           </tr>
           <tr>
             <td>Runtime: <span id="runtime" class="loadable" onloadText="null"></span></td>

@@ -117,6 +117,7 @@
      <canvas id="main" width="1920" height="1080"></canvas>
      <button type="button" name="button" onclick="loadImage()">Load image</button>
      <button type="button" name="button" onclick="executeRender()">Execute WASM render</button>
+     <span id="timeOutput"></span>
      <script type="text/javascript">
      let canvas = $('#main')[0];
      let ctx = canvas.getContext('2d');
@@ -140,17 +141,19 @@
           xhr.send()
         }
         function executeRender(){
+          let initTime = Date.now();
           let {height,width} = canvas;
           let imageData = ctx.getImageData(0,0,width,height);
           let uintArray = new Uint8Array(imageData.data);
           const buffer = Module._malloc(uintArray.length);
           Module.HEAPU8.set(uintArray, buffer);
-          Module.ccall('encodeMandelbrot','number',['number','number','number','number','number','number','number','number'],[buffer,uintArray.length,width,height,-2,1,1,-1]);
+          Module.ccall('encodeMandelbrot','number',['number','number','number','number','number','number','number','number','number'],[buffer,uintArray.length,width,height,-2,1,1,-1,30]);
           result = Module.HEAPU8.subarray(buffer, buffer+uintArray.length)
           Module._free(buffer);
           for(let i = 0;i<result.length;i++)imageData.data[i] = result[i];
-          console.log(imageData.data)
+          console.log(imageData.data);
           ctx.putImageData(imageData,0,0);
+          console.log(Date.now() - initTime)
         }
      </script>
    </body>

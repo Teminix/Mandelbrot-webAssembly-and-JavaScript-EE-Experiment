@@ -19,7 +19,7 @@ progressValue = $('#progressValue');
 GLOBALS = {
   aspectRatio:1.5,
   roundOffAmount:6,
-  iterations:20
+  iterations:30
 }
 
 // Returns in the form of [X,Y]
@@ -86,7 +86,7 @@ function mainRenderFunction(xStart,yStart,xEnd,yEnd){
   return new Promise((resolve, reject) => {
     try {
       $('.loadable').text("Loading...")
-      console.log("Rendering...")
+      // console.log("Rendering...")
       for(let i=0;i<imageData.data.length;i+=4){
         let pixel = i/4;
         let [xCoord,yCoord] = getCoordsFromIndex(width,height,pixel,xStart,yStart,xEnd,yEnd);
@@ -148,7 +148,10 @@ canvas.addEventListener("mouseout",function(e){
   xPixelElem.innerText = yPixelElem.innerText = xCoordinate.innerText = yCoordinate.innerText = ""
   // clearInterval(interval);
 })
-
+Module.onRuntimeInitialized = function(){
+  console.log("WebAssembly Runtime initialized.");
+  $('#runtimeStatus').css({'color':'green'}).text("Ready")
+}
 
 
 // for(let i=0;i<imageData.data.length;i+=4){
@@ -185,6 +188,7 @@ $('.copy').on('click',(e) => {
 // Button functions
 
 function executeRender(){
+  console.log("Rendering...")
   $('#runtime').text("Rendering...")
   setTimeout(runRender,500)
 }
@@ -279,16 +283,32 @@ function runRender(){ // Renders and calculates runtime
   yBottomRightOffset = yTopLeftOffset - (Math.abs(xBottomRightOffset-xTopLeftOffset))/aspectRatio;
   // generateImageID();
   // console.log([xTopLeftOffset,yTopLeftOffset,xBottomRightOffset,yBottomRightOffset].join("\n"))
-  mainRenderFunction(xTopLeftOffset,yTopLeftOffset,xBottomRightOffset,yBottomRightOffset)
-  .then((imageData) => {
-      ctx.putImageData(imageData,0,0);
-      GLOBALS.mainImageData = imageData;
-      console.log(imageData);
-      runtime = (Date.now()-ts)/1000;
-      $('.loadable').trigger('load');
-      $('#runtime').text(`${runtime}s`);
-      console.log(`Rendering complete[Runtime: ${runtime} seconds]`);
-    })
+  const chosenEngine = $('#renderEngine').val();
+  if (chosenEngine == 'JavaScript') {
+    mainRenderFunction(xTopLeftOffset,yTopLeftOffset,xBottomRightOffset,yBottomRightOffset)
+    .then((imageData) => {
+          ctx.putImageData(imageData,0,0);
+          GLOBALS.mainImageData = imageData;
+          // console.log(imageData);
+          runtime = (Date.now()-ts)/1000;
+          $('.loadable').trigger('load');
+          $('#runtime').text(`${runtime}s`);
+          console.log(`Rendering complete[Runtime: ${runtime} seconds]`);
+        })
+  } else {
+    let imgData = ctx.getImageData(0,0,width,height);
+    let uintArray = new Uint8Array(imgData.data);
+    const buffer = Module._malloc(uintArray.length);
+    Module.HEAPU8.set(uintArray,buffer);
+    Module.ccall('encodeMandelbrot','number',['number','number','number','number','number','number','number','number','number'],[buffer,uintArray.length,width,height,xTopLeftOffset,yTopLeftOffset,xBottomRightOffset,yBottomRightOffset,GLOBALS.iterations]);
+    result = Module.HEAPU8.subarray(buffer,buffer + uintArray.length);
+    Module._free(buffer);
+    for(let i=0;i<uintArray.length;i++) imgData.data[i] = result[i];
+    ctx.putImageData(imgData,0,0);
+    let difference = (Date.now()-ts)/1000;
+    $('#runtime').text(`${difference}s`)
+    console.log(`Rendering completed with runtime : ${difference}s`);
+  }
 }
 function uploadCanvas(){
   canvas.toBlob(function(blob){

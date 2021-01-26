@@ -47,7 +47,7 @@ extern "C" {
     for(int yPixel=0;yPixel<height;yPixel++){
       xCoord = xStart;
       for(int xPixel=0;xPixel<width;xPixel++){
-        if(mandelbrotCheck(xCoord,yCoord,20,2)){
+        if(mandelbrotCheck(xCoord,yCoord,iterations,2)){
           *index=0;index++; // Red
           *index=0;index++; // Blue
           *index=0;index++; // Green
