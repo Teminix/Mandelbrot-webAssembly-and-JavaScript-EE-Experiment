@@ -83,6 +83,11 @@
             <td>&nbsp;</td>
           </tr>
           <tr>
+            <td>Image ID : <span id="imageID"></span></td>
+            <td><button class='copy' copy-bind="imageID" name="button">Copy ID</button></td>
+            <td><button class='' onclick="generateImageID()" name="button">Generate new ID</button></td>
+          </tr>
+          <tr>
             <td>xStartOffset: <input id="xstart" value="-2" default-value="-2"></input></td>
           </tr>
           <tr>
@@ -93,6 +98,7 @@
           </tr>
           <tr>
             <td>yEndOffset: <span id="yend" default-value="-1"></span></td>
+            <td><button class="copy" copy-bind="yend" name="button">Copy</button></td>
           </tr>
           <tr>
             <td>&nbsp;</td>
@@ -120,7 +126,13 @@
             <td><button class="" name="button" onclick="loadStock()">Load stock image</button></td>
           </tr>
           <tr>
+            <td><button class="" name="button" onclick="loadID()">Load image with ID</button></td>
+          </tr>
+          <tr>
             <td><button class="" name="button" onclick="toggleCrossHair(this)">Choose point(s)</button></td>
+          </tr>
+          <tr>
+            <td><button class="" name="button" onclick="uploadCanvas()">Export image</button></td>
           </tr>
           <tr>
             <td>&nbsp;</td>
@@ -133,9 +145,12 @@
           </tr>
           <tr>
             <td>Cross hair X Coordinate : <span id="crossXCoordinate"></span></td>
+            <td><button class="copy" copy-bind="crossXCoordinate" copy-output="xstart" name="button">Copy and bind</button></td>
+            <td><button class="copy" copy-bind="crossXCoordinate" copy-output="xend" name="button">Copy and bind xend</button></td>
           </tr>
           <tr>
             <td>Cross hair Y Coordinate : <span id="crossYCoordinate"></span></td>
+            <td><button class="copy" copy-bind="crossYCoordinate" copy-output="ystart" name="button">Copy and bind</button></td>
           </tr>
         </table>
       </span>

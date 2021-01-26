@@ -17,7 +17,9 @@ const c = (a,b)=>new Complex(a,b)
 progress  = $('#progress');
 progressValue = $('#progressValue');
 GLOBALS = {
-  aspectRatio:1.5
+  aspectRatio:1.5,
+  roundOffAmount:6,
+  iterations:20
 }
 
 // Returns in the form of [X,Y]
@@ -69,7 +71,13 @@ function setPixelTo(imageData,pixel,R,G,B,A){
   imageData.data[pixel+2] = B;
   imageData.data[pixel+3] = A;
 }
-
+function randGen(len){
+  let alphabets = "abcdefghijklmnoopqrstuvwxyz"
+  let allowed = alphabets + alphabets.toUpperCase() + "0123456789";
+  let str = '';
+  for(let i=0;i<len;i++) str += allowed[Math.round(Math.random()*allowed.length)-1];
+  return str;
+}
 
 // Loops/mechanics
 
@@ -82,7 +90,7 @@ function mainRenderFunction(xStart,yStart,xEnd,yEnd){
       for(let i=0;i<imageData.data.length;i+=4){
         let pixel = i/4;
         let [xCoord,yCoord] = getCoordsFromIndex(width,height,pixel,xStart,yStart,xEnd,yEnd);
-        if(mandelbrotCheck(c(xCoord,yCoord),20)) setPixelTo(imageData,i,0,0,0,255);
+        if(mandelbrotCheck(c(xCoord,yCoord),GLOBALS.iterations)) setPixelTo(imageData,i,0,0,0,255);
         else setPixelTo(imageData,i,255,255,255,255)
       }
       resolve(imageData)
@@ -118,8 +126,8 @@ canvas.addEventListener("mousemove",function(e){
   xPixelElem.innerText = Math.round(xPixel);
   yPixelElem.innerText = Math.round(yPixel);
   let [xCoord, yCoord] = getCoordsFromPixels(width,height,xPixel,yPixel,xTopLeftOffset,yTopLeftOffset,xBottomRightOffset,yBottomRightOffset)
-  xCoordinate.innerText = Math.roundOff(xCoord,3);
-  yCoordinate.innerText = Math.roundOff(yCoord,3);
+  xCoordinate.innerText = Math.roundOff(xCoord,GLOBALS.roundOffAmount);
+  yCoordinate.innerText = Math.roundOff(yCoord,GLOBALS.roundOffAmount);
 })
 canvas.addEventListener("mousedown",function(e){ // Adding a cross hair
   if($(canvas).attr("crosshair") === 'on') {
@@ -129,8 +137,8 @@ canvas.addEventListener("mousedown",function(e){ // Adding a cross hair
     idLabels({
       'crossXPixel':Math.round(xPoint),
       'crossYPixel':Math.round(yPoint),
-      'crossXCoordinate':Math.roundOff(xCoord,3),
-      'crossYCoordinate':Math.roundOff(yCoord,3)
+      'crossXCoordinate':Math.roundOff(xCoord,GLOBALS.roundOffAmount),
+      'crossYCoordinate':Math.roundOff(yCoord,GLOBALS.roundOffAmount)
     })
     ctx.putImageData(GLOBALS.mainImageData,0,0);
     cross(ctx, xPoint, yPoint, 10,{thickness:3,color:'red'});
@@ -152,11 +160,30 @@ canvas.addEventListener("mouseout",function(e){
 //   imageData[i+3] = 255
 // }
 
+
+// Special class declarations
 $('.loadable').on('load',function() { // Every element that we want a "loading..." text to be shown while execution
   let e = $(this);
   if(e.attr("onloadText")===undefined) e.text('')
   else e.text(e.attr('onloadText'))
 })
+$('.copy').on('click',(e) => {
+  let elem = $(e.target);
+  let boundElementValue = $(`#${elem.attr('copy-bind')}`).text();
+  boundElementValue = boundElementValue.trim() == ''?0:boundElementValue;
+  if(typeof $(`#${elem.attr('copy-output')}`) != 'undefined') $(`#${elem.attr('copy-output')}`).val(boundElementValue);
+  let inputElem = $(`<input value="${boundElementValue}">`);
+  $('body').append(inputElem);
+  inputElem.select();
+  // l(inputElem[0])
+  // GLOBALS.inputElem = inputElem;
+  document.execCommand("copy");
+  inputElem.remove();
+})
+
+
+// Button functions
+
 function executeRender(){
   $('#runtime').text("Rendering...")
   setTimeout(runRender,500)
@@ -183,6 +210,30 @@ function loadStock(){
   }
   xhr.send()
 }
+function loadID(){
+  let ID = prompt("Enter ID of image to use:");
+  let fr = new FileReader();
+  let xhr = new XMLHttpRequest();
+  xhr.responseType = 'blob';
+  xhr.open('GET',`/images/${ID}.png`,true);
+  fr.addEventListener('load',function(event){
+    // console.log(event.target.result.replace('data:image/png;base64,',''));
+    let res = event.target.result;
+    let img = $('#testImage');
+    img.attr("src",res);
+    img = img[0];
+    let canvas = $('#canvas')[0]
+    let ctx = canvas.getContext('2d');
+    ctx.drawImage(img,0,0);
+    GLOBALS.mainImageData = ctx.getImageData(0,0,width,height);
+  })
+  xhr.onload = function(){
+    if (this.status === 200) fr.readAsDataURL(this.response)
+    else if(this.status >= 500) alert('Error occured')
+    else console.warn("Something may have gone wrong oops pls fix")
+  }
+  xhr.send()
+}
 function testFunc(){
 
 }
@@ -196,7 +247,7 @@ function resetRenderValues(){
   $('#yend').text($('#yend').attr('default-value'))
 }
 function calculateYEnd(){
-  $('#yend').text(Number($('#ystart').val())-(Math.abs(Number($('#xend').val())-Number($('#xstart').val())))/GLOBALS.aspectRatio)
+  $('#yend').text(Math.roundOff(Number($('#ystart').val())-(Math.abs(Number($('#xend').val())-Number($('#xstart').val())))/GLOBALS.aspectRatio,GLOBALS.roundOffAmount))
   // console.log(())
 }
 function clearCanvas(){
@@ -215,12 +266,18 @@ function toggleCrossHair(button){
     $(button).text("Cancel")
   }
 }
+function generateImageID(){
+  let imageID = randGen(10);
+  GLOBALS.currentImageID = imageID;
+  $('#imageID').text(imageID);
+}
 function runRender(){ // Renders and calculates runtime
   let ts = Date.now();
   xTopLeftOffset = Number($('#xstart').val() );
   yTopLeftOffset = Number($('#ystart').val());
   xBottomRightOffset = Number($('#xend').val());
   yBottomRightOffset = yTopLeftOffset - (Math.abs(xBottomRightOffset-xTopLeftOffset))/aspectRatio;
+  // generateImageID();
   // console.log([xTopLeftOffset,yTopLeftOffset,xBottomRightOffset,yBottomRightOffset].join("\n"))
   mainRenderFunction(xTopLeftOffset,yTopLeftOffset,xBottomRightOffset,yBottomRightOffset)
   .then((imageData) => {
@@ -232,6 +289,23 @@ function runRender(){ // Renders and calculates runtime
       $('#runtime').text(`${runtime}s`);
       console.log(`Rendering complete[Runtime: ${runtime} seconds]`);
     })
+}
+function uploadCanvas(){
+  canvas.toBlob(function(blob){
+    let formData = new FormData();
+    formData.append('image_render',blob,GLOBALS.currentImageID+".png");
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST",'/upload_image',true);
+    xhr.responseType = 'text';
+    xhr.onreadystatechange = function(){
+      if(this.readyState  == 4){
+        if(this.status == 200) console.log(this.responseText);
+        else if (this.status >=500) console.error(this.responseText);
+        else console.info(this.responseText);
+      }
+    }
+    xhr.send(formData);
+  })
 }
 // ctx.putImageData(imageData,0,0)
 

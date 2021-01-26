@@ -1,0 +1,157 @@
+<!-- <!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>WebAssembly testing environment</title>
+    <script src="output.js" charset="utf-8"></script>
+    <script type="text/javascript">
+    // console.log(addNums(1,2))
+    /**
+     * Returns a valid importObj.env object with default values to pass
+     * into the WebAssembly.Instance constructor for Emscripten's
+     * Wasm module.
+     */
+    // const getDefaultEnv = () => ({
+    //   memoryBase: 0,
+    //   tableBase: 0,
+    //   memory: new WebAssembly.Memory({ initial: 256 }),
+    //   table: new WebAssembly.Table({ initial: 2, element: 'anyfunc' }),
+    //   abort: console.log
+    // });
+
+    /**
+     * Returns a WebAssembly.Instance instance compiled from the specified
+     * .wasm file.
+     */
+    // function loadWasm(fileName, importObj = { env: {} }) {
+    //   // Override any default env values with the passed in importObj.env
+    //   // values:
+    //   const allEnv = Object.assign({}, getDefaultEnv(), importObj.env);
+    //
+    //   // Ensure the importObj object includes the valid env value:
+    //   const allImports = Object.assign({}, importObj, { env: allEnv });
+    //
+    //   // Return the result of instantiating the module (instance and module):
+    //   return fetch(fileName)
+    //     .then(response => {
+    //       if (response.ok) return response.arrayBuffer();
+    //       throw new Error(`Unable to fetch WebAssembly file ${fileName}`);
+    //     })
+    //     .then(bytes => WebAssembly.instantiate(bytes, allImports));
+    // }
+    //
+    //
+    //
+      const l = console.log;
+      // l("Hello world");
+      const importObject = {env:{
+            'memoryBase': 0,
+            'tableBase': 0,
+            'memory': new WebAssembly.Memory({initial: 256}),
+            'table': new WebAssembly.Table({initial: 256, element: 'anyfunc'}),
+            abort: console.log,
+            }
+      }
+
+      //  Using instantiateStreaming method
+      // WebAssembly.instantiateStreaming(fetch('output.wasm'),importObject)
+      // .then((result) => {
+      //   l(result)
+      // })
+
+      // Using direct instantiate
+      // fetch('output.wasm')
+      // .then(response => response.arrayBuffer())
+      // .then(buffer => WebAssembly.instantiate(buffer,importObject))
+      // .then(result=>{
+      //   // sampleArray = [2,3,4]
+      //   result.module.ccall()
+      //   // l(sampleArray)
+      // })
+      // loadWasm('output.wasm').then((result) => {
+      //   l(result)
+      // })
+    </script>
+  </head>
+  <body>
+    Hello this is test
+  </body>
+</html>
+ -->
+
+ <!DOCTYPE html>
+ <html lang="en" dir="ltr">
+   <head>
+     <meta charset="utf-8">
+     <script src="output.js" charset="utf-8"></script>
+     <script src="jquery.js" charset="utf-8"></script>
+     <style media="screen">
+       body {
+         background-color:grey;
+       }
+     </style>
+     <!-- EMCC compile command:
+     emcc main.cpp -o static/output.js -s EXPORTED_FUNCTIONS='["_sum","_mandelbrotCheck","_modifyArray","_malloc","_free"]' -s ASSERTIONS=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' -s ALLOW_MEMORY_GROWTH=1
+
+    -->
+     <script type="text/javascript">
+       Module.onRuntimeInitialized = function(){
+         console.log(Module.ccall('mandelbrotCheck','boolean',['number','number','number'],[-1.8078125000000,1,20]))
+         // const myArray = new Uint8Array([100,123,0,2]);
+         // const buffer = Module._malloc(myArray.length);
+         // Module.HEAPU8.set(myArray, buffer);
+         // Module.ccall('modifyArray','number',['number','number'],[buffer,myArray.length]);
+         // console.log(Module.HEAPU8.subarray(buffer, buffer+myArray.length))
+         // Module._free(buffer);
+         console.log("Runtime ready and initialised")
+       }
+     </script>
+     <style media="screen">
+       canvas {
+         border: solid 2px black
+       }
+     </style>
+     <title></title>
+   </head>
+   <body>
+     <canvas id="main" width="1920" height="1080"></canvas>
+     <button type="button" name="button" onclick="loadImage()">Load image</button>
+     <button type="button" name="button" onclick="executeRender()">Execute WASM render</button>
+     <script type="text/javascript">
+     let canvas = $('#main')[0];
+     let ctx = canvas.getContext('2d');
+        function loadImage(){
+          let xhr = new XMLHttpRequest();
+          let fr = new FileReader();
+          xhr.open("GET",'/stock.png',true);
+          xhr.responseType = 'blob';
+          fr.onload = function(event){
+            let res = event.target.result;
+            let img = document.createElement("img");
+            img.src = res;
+            ctx.drawImage(img,0,0);
+          }
+          xhr.onreadystatechange = function(){
+            if(this.readyState == 4) {
+              if (this.status == 200) fr.readAsDataURL(this.response);
+              else console.error('Something went wrong rip');
+            }
+          }
+          xhr.send()
+        }
+        function executeRender(){
+          let {height,width} = canvas;
+          let imageData = ctx.getImageData(0,0,width,height);
+          let uintArray = new Uint8Array(imageData.data);
+          const buffer = Module._malloc(uintArray.length);
+          Module.HEAPU8.set(uintArray, buffer);
+          Module.ccall('encodeMandelbrot','number',['number','number','number','number','number','number','number','number'],[buffer,uintArray.length,width,height,-2,1,1,-1]);
+          result = Module.HEAPU8.subarray(buffer, buffer+uintArray.length)
+          Module._free(buffer);
+          for(let i = 0;i<result.length;i++)imageData.data[i] = result[i];
+          console.log(imageData.data)
+          ctx.putImageData(imageData,0,0);
+        }
+     </script>
+   </body>
+ </html>
