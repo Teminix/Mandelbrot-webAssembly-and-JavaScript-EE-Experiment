@@ -4,6 +4,7 @@ const app = express();
 const morgan = require("morgan");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 let storage = multer.diskStorage({
   destination:(req,file,cb) => {
     cb(null,'static/images/')
@@ -15,7 +16,17 @@ let storage = multer.diskStorage({
 })
 app.use(morgan('short'))//
 app.get('/',(req,res) => {
-  res.type("html").send("Hello there <a href='/index.html'>Link to main site</a>");
+  // res.type("html").send("Hello there <a href='/index.html'>Link to main site</a>");
+  fs.readdir('static/',(err,docs) => {
+    if(err) res.status(500).send(err)
+    else {
+      let htmlFiles = docs.filter(e=>/.+\.html/.test(e));
+      let htmlString = "<h1>HTML files available in the server</h1><ul>";
+      for (file of htmlFiles) htmlString += `<li><a href="/${file}">${file}</a></li>`;
+      htmlString += "</ul>";
+      res.type('html').send(htmlString);
+    }
+  })
 })
 app.post("/upload_image",(req,res) => {
   let upload = multer({storage}).single('image_render');

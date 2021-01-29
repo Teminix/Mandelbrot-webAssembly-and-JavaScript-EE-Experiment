@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="js/plotly.js" charset="utf-8"></script>
+    <script src="js/axios.js" charset="utf-8"></script>
+  </head>
+  <body>
+    <div id="plot" style="display:inline-block;height:1000px;width:2000px">
+
+    </div>
+    <script type="text/javascript">
+      const FONTSIZE = 41;
+
+
+
+      axios.get("tables/processed data.csv").then((response) => {
+        // console.log(response);
+        let {data} = response;
+        let dataArray = data.split("\n").map(e=>e.split(','));
+        let headings = dataArray.splice(0,1)[0].map(e=>e.trim());
+        let dataObject = {};
+        for(heading of headings) dataObject[heading] = [];
+        for(entry of dataArray) {
+          for (i in headings) dataObject[headings[i]].push(entry[i])
+        }
+        // console.log(Object.keys(dataObject))
+        // console.log(dataObject[Object.keys(dataObject)[2]])
+        window.dataObject = dataObject;
+        let traces = [
+          {
+            x:dataObject['Trial no.'],
+            y:dataObject['WASM'],
+            text:dataObject['WebAssembly Average Runtime(s)'],
+            textposition:'bottom',
+            textfont:{
+              size:30
+            },
+            mode:"lines+markers+text",
+            name:"WebAssembly",
+            type:'scatter',
+            line: {
+              dash:'dot',
+              color:'black',
+              width:4
+            },
+            marker:{
+              symbol:'triangle-up',
+              size:20
+            }
+          },
+          {
+            x:dataObject['Trial no.'],
+            y:dataObject['JS'],
+            text:dataObject[Object.keys(dataObject)[2]],
+            textposition:'bottom',
+            textfont:{
+              size:30
+            },
+            mode:"lines+markers+text",
+            name:"JavaScript",
+            type:'scatter',
+            line: {
+              color:'black',
+              width:6
+            },
+            marker:{
+              size:20
+            }
+          }
+        ]
+        secondTraces = {
+          x:dataObject['WASM'],
+          y:dataObject['JS'],
+          type:'scatter',
+          mode:'markers',
+          marker:{
+            color:'black',
+            size:25,
+            symbol:'diamond'
+          },
+        }
+        let f = x => 7.39264*x + 2.19254;
+        let lineXValues = [0,1.3];
+        layout = {
+          title:{
+            text:"Comparing rendering runtimes for each trial",
+            font:{
+              size:50
+            }
+          },
+          xaxis:{
+            title:{
+              text:"Trial no.",
+              font:{
+                size:FONTSIZE
+              }
+            },
+            autotick:false,
+            ticks:'inside',
+            tickwidth:2,
+            ticklen:10,
+            dtick:1,
+            tick0:0,
+            tickfont:{
+              size:30
+            }
+          },
+          yaxis:{
+            tickfont:{
+              size:30
+            },
+            title: {
+              text: 'Average execution runtime(seconds)',
+              font: {
+                size: FONTSIZE,
+              }
+          }},
+          legend:{
+            font:{
+              size:45
+            }
+          }
+        }
+        secondLayout = {
+          title: {
+            text:"Render runtimes mapped to each other for JavaScript and WebAssembly",
+            font:{
+              size:50
+            }
+          },
+          xaxis:{
+            tickfont:{
+              size:30
+            },title:{
+              text:"WebAssembly(seconds)",
+              font:{
+                size:FONTSIZE
+              }
+            },range:[0.4,1.3]
+          },
+          yaxis:{
+            title:{
+              text:"JavaScript(seconds)",
+              font:{
+                size:FONTSIZE
+              }
+            },
+            tickfont:{
+              size:30
+            },
+            range:[0,15]
+          }
+        }
+        Plotly.newPlot(document.getElementById('plot'),[{
+          x:lineXValues,
+          y:lineXValues.map(e=>f(e)),
+          type:'scatter',
+          mode:'lines',
+          line:{
+            color:'lightgrey',
+            width:10,
+            dash:'dot'
+          }
+        },secondTraces],secondLayout)
+      })
+    </script>
+  </body>
+</html>

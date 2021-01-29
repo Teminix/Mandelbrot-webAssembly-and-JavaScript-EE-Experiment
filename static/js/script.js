@@ -196,7 +196,7 @@ function loadStock(){
   let fr = new FileReader();
   let xhr = new XMLHttpRequest();
   xhr.responseType = 'blob';
-  xhr.open('GET','/stock.png',true);
+  xhr.open('GET','images/stock.png',true);
   fr.addEventListener('load',function(event){
     // console.log(event.target.result.replace('data:image/png;base64,',''));
     let res = event.target.result;
